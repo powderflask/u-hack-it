@@ -1,0 +1,47 @@
+
+        <!-- Main jumbotron for a primary marketing message or call to action -->
+        <div class="jumbotron">
+            <div class="container">
+                <h2>This site is not secure!</h2>
+                <div class="alert alert-danger">DO NOT ENTER ANY REAL PERSONAL OR PRIVATE INFORMATION!</div>
+            </div>
+        </div>
+
+        <div class="container">
+        	<div>
+        		<h3>Register for your fake members account here</h3>
+                <form class="form-horizontal" role="form" action="<?php echo rewriteURL(REGISTER) ?>" method="post">
+                    <div class="form-group">
+    					<label for="username" class="col-sm-2 control-label">Your Email</label>
+    					<div class="col-sm-10">
+    	                	<input name="username" type="text" placeholder="Email" class="form-control">
+							<span class="help-block">
+       					 		Each user must have a unique e-mail address.
+							</span>
+     	                </div>
+                    </div>
+                    <div class="form-group">
+    					<label for="password" class="col-sm-2 control-label">Your Password</label>
+    					<div class="col-sm-10">
+	                        <input name="password" type="password" placeholder="Password" class="form-control">
+    	                </div>
+                    </div>
+                    <div class="form-group">
+    					<label for="personal" class="col-sm-2 control-label">Personal Info</label>
+        				<div class="col-sm-10">
+	                    	<input name="personal" type="text" placeholder="Personal Info" class="form-control">
+							<span class="help-block">
+								On a real website, this might be your phone number, address, credit card # - information NO ONE ELSE should ever see!
+							</span>
+    	                </div>
+                    </div>
+                    <div class="form-group">
+	    				<div class="col-sm-offset-2 col-sm-10">
+    	                    <button type="submit" class="btn btn-success">
+    		                    Sign up
+            		        </button>
+    	                </div>
+                    </div>
+                </form>
+            </div>
+		</div>

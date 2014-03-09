@@ -1,0 +1,23 @@
+.user-welcome {
+    color: #FFFFFF;
+    float: right;
+    margin-top: 10px;
+}
+.user-welcome .logout {
+	margin-left: 10px;
+}
+
+div.medium {
+	width: 40%;
+}
+
+.comment .comment-text {
+	font-family: Georgia, serif;
+	font-style: italic;
+}
+.comment footer {
+	margin-left: 5em;
+}
+.comment .comment-timestamp {
+	font-size:smaller;
+}

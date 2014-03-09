@@ -1,0 +1,30 @@
+
+		<!-- Main jumbotron for a primary marketing message or call to action -->
+		<div class="jumbotron">
+			<div class="container">
+				<div class="panel panel-default medium pull-right">
+					<div class="panel-body">
+						<form role="comment" method="post" action="<?php echo rewriteURL(COMMENT) ?>">
+						    <div class="form-group">
+						      <textarea name="comment" class="form-control" placeholder="Leave us a Comment"></textarea>
+						    </div>
+						    <button type="submit" class="btn btn-primary search">Submit</button>
+					 	</form>
+					 </div>
+				</div>
+				<h2>U-Hack-It Comment Board</h2>
+				<p>
+					Comments from our users probably contain persistent XSS attacks - be prepared to be annoyed or even seriously hacked!
+				</p>
+			</div>
+		</div>
+
+		<div class="container">
+			<div>
+				<h3>Recent Comments</h3>
+				<?php
+				   require_once 'class-comment.php';
+				   Comment::listAll();
+				?>
+			</div>
+		</div>
