@@ -14,3 +14,4 @@
     HTML5, CSS3
     Normalize.css, Modernizr, Bootstrap (gotta love it)
     jQuery (of course)
+    github (with gratitude)
