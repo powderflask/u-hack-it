@@ -7,7 +7,7 @@
  *     see: http://www.sitepoint.com/front-controller-pattern-1/
  *     Why?  DRY'er code, easier template handling.
  *
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL2

@@ -6,7 +6,7 @@
  * Simple messaging class
  *   - stores serialized messages directly in session cookie.
  *  
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
@@ -23,14 +23,23 @@ define ("MSG_ERROR",'alert-danger');
 class Message {
     var $msg = '';
     var $lvl = MSG_INFO;
-    
-    function Message($message, $level= MSG_INFO) {
+
+    /*
+     * Construct new message object
+     */
+    function __construct($message, $level= MSG_INFO) {
         $this->msg = $message;
         $this->lvl = $level;
     }
 }
 
-class Msg {    
+class Msg {
+    /*
+     * Constructor - required
+     */
+    public function __construct() {
+    }
+
     /**
      * Init. - must be called before attempting to store messages in session.
      */    
@@ -48,7 +57,7 @@ class Msg {
     
     static function addMessage($message, $level=MSG_INFO) {
         Msg::initSession();
-        $_SESSION['messages'][] = serialize(new Message($message, $level));       
+        $_SESSION['messages'][] = serialize(new Message($message, $level));
     }
     
     static function printMessages() {

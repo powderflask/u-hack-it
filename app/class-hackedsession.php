@@ -5,7 +5,7 @@
  * 
  * Class to manage session keys that have been hacked via XSS attack.
  * 
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
@@ -34,7 +34,7 @@ class HackedSession {
             $query="INSERT INTO hackedsessions (sessionkey, referer) VALUES ('$sessionkey', '$referer');";
 
             $result = $db->query($query);
-            $result = !$result ? "DB Error adding new session record." : TRUE;            
+            $result = (bool) DB::fetch_rows($result) ? TRUE : "DB Error adding new session record.";
         }  
         else {  
            $result = "Unable to connect to DB - try later.";
@@ -53,7 +53,7 @@ class HackedSession {
                              WHERE sessionkey='$sessionkey' AND referer='$referer';";            
             // Run query
             $result = $db->query($query);
-            return ($result && $result->num_rows > 0);
+            return (bool) DB::fetch_rows($result);
         }
         return false;
     }  
@@ -69,8 +69,8 @@ class HackedSession {
                              ORDER BY timestamp DESC;";            
             // Run query
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
-                while ($session = $result->fetch_object('HackedSession')) {
+            if ($result) {
+                while ($session = $result->fetchObject('HackedSession')) {
                    $sessions[] = $session;
                 }
             }
@@ -93,7 +93,7 @@ class HackedSession {
      */
     public static function getCookie($cookieString, $cookieName='PHPSESSID') {
         $name = $cookieName . "=";
-        $cookies = split(';', $cookieString);
+        $cookies = explode(';', $cookieString);
         foreach ($cookies as $cookie) {
             $cookie = trim($cookie);
             if (substr_count($cookie, $name)) {
@@ -137,18 +137,17 @@ class HackedSession {
                 $db->query("DROP TABLE IF EXISTS hackedsessions");
             }
             // Only do the create if the table does not yet exist.
-            $table_exists = $db->query("DESCRIBE `hackedsessions`;", FALSE);
-            if (! $table_exists) {
-                $query = "CREATE TABLE `hackedsessions` (
-                                  `id` int(10) unsigned NOT NULL auto_increment,
-                                  `referer` text character set utf8,
-                                  `sessionkey` text character set utf8 NOT NULL,
-                                  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-                                  PRIMARY KEY  (`id`),
-                                  FULLTEXT KEY `sessionkey` (`sessionkey`)
-                                ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+            if (! $db->tableExists('hackedsessions')) {
+                $query = "CREATE TABLE IF NOT EXISTS hackedsessions (
+                              id INTEGER PRIMARY KEY NOT NULL,
+                              referer text,
+                              sessionkey text NOT NULL,
+                              timestamp timestamp default CURRENT_TIMESTAMP NOT NULL
+                            );
                          ";
-                $db->query($query);
+                if (! $db->query($query) ) {
+                    Msg::addMessage("Create Session Table failed: " . $query,MSG_ERROR);
+                }
             }
          }
     }

@@ -10,12 +10,13 @@
  *  - it does not encrypt the user's credentials, leaving them exposed if a hacker gains access to the DB.
  *  - uses DB key in a cookie to store user's session info (also uses Session correctly in parallel)
  * 
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
  */
 require_once 'class-db.php';
+require_once "class-msg.php";
 
 // Ensure the User DB table is setup (this is really inefficient - should be relegated to start up script)
 User::createTable();    
@@ -34,7 +35,13 @@ class User {
     var $username;
     var $password;
     var $personal;
-    
+
+    /**
+     * Constructor - singleton pattern
+     */
+    protected function __construct() {
+    }
+
     /**
      * Seriously compromised authentication script - Attempts to authenticate this user using the login credentials in a DB query
      * Returns a loaded User object with session if the login credentials authenticate, null otherwise
@@ -47,14 +54,15 @@ class User {
             //        compounded by using the query to match the p/w
             $query="SELECT * from members where username='$login_name' and password='$login_pw';";
 # e.g.       $query="SELECT * from members where username='' or 1=1 or 'a'='a' and password='';";
-
             // feed the query to the DB - if we get a result back, we assume we found a user matching the credentials
             // (in case I haven't been clear - this would be a VERY bad way to authenticate a user!)
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
-                self::$user = $result->fetch_object('User');      
-                // print_r(self::$user);      
-                self::$user->initSession();
+            if ($result) {
+                self::$user = $result->fetchObject('User');
+                // print_r(self::$user);
+                if (self::$user) {
+                    self::$user->initSession();
+                }
             }
             self::$last_query = $query;
         }
@@ -73,9 +81,9 @@ class User {
 
             // Run query to look for a user with that user name
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
-                $user = $result->fetch_object('User');      
-                if ($user->password == $login_pw)    {  // application logic to authenticate password - seems so impenetrable, but it's not..
+            if ($result) {
+                $user = $result->fetchObject('User');
+                if ($user && $user->password == $login_pw)    {  // application logic to authenticate password - seems so impenetrable, but it's not..
                     self::$user = $user;
                     self::$user->initSession();
                 }
@@ -96,9 +104,9 @@ class User {
 
             // Run query to look for a user with that user name
             $result = $db->sanitized_query($query, $login_name);
-            if ($result && $result->num_rows > 0) {
-                $user = $result->fetch_object('User');      
-                if ($user->password == $login_pw)    {  // application logic to authenticate password
+            if ($result) {
+                $user = $result->fetchObject('User');
+                if ($user && $user->password == $login_pw)    {  // application logic to authenticate password
                     self::$user = $user;
                     self::$user->initSession();
                 }
@@ -119,7 +127,7 @@ class User {
             // first check if this user is already in the DB (again, exposing another SQL injection exploit)
             $query="SELECT * from members where username='$login_name';";
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
+            if ((bool) DB::fetch_rows($result)) {
                 $result = 'Your e-mail is already registered - try another e-mail.';
             } else {
                 // ACK!  storing raw user input and unencrypted passwords in DB - yikes!
@@ -132,12 +140,6 @@ class User {
             $result = "Unable to connect to DB - try later.";
          }
          return $result;
-    }
-
-    /**
-     * Constructor - singleton pattern
-     */
-    protected function User() {
     }
     
     /**
@@ -156,8 +158,8 @@ class User {
                 // feed the query to the DB - if we get a result back, we found a user matching the credentials
                 // (in case I haven't been clear - this would is an insecure way to retrieve a user!)
                 $result = $db->query($query);
-                if ($result && $result->num_rows > 0)
-                    self::$compromised_user = $result->fetch_object('User');            
+                if ($result)
+                    self::$compromised_user = $result->fetchObject('User');
                 self::$last_query = $query;
             }
         }
@@ -176,8 +178,8 @@ class User {
                 // look up the user in the DB
                 $query="SELECT * from members where id='$key';";
                 $result = $db->query($query);
-                if ($result && $result->num_rows > 0)
-                    self::$user = $result->fetch_object('User');            
+                if ($result)
+                    self::$user = $result->fetchObject('User');
                 self::$last_query = $query;
             }
         }
@@ -236,18 +238,18 @@ class User {
                 $db->query("DROP TABLE IF EXISTS members");
             }
             // Only do the create if the table does not yet exist.
-            $table_exists = $db->query("DESCRIBE `members`;", FALSE);
-            if (! $table_exists) {
-                $query = "CREATE TABLE `members` (
-                              `id` int(10) unsigned NOT NULL auto_increment,
-                              `username` varchar(50) NOT NULL,
-                              `password` varchar(50) NOT NULL,
-                              `personal` varchar(100) default NULL,
-                              PRIMARY KEY  (`id`),
-                              UNIQUE KEY `username` (`username`)
-                            ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+            if (! $db->tableExists('members')) {
+                $query = "CREATE TABLE IF NOT EXISTS members (
+                              id INTEGER PRIMARY KEY NOT NULL,
+                              username text NOT NULL UNIQUE,
+                              password text NOT NULL,
+                              personal text default NULL
+                            );
                          ";
-                $db->query($query);
+
+                if (! $db->query($query) ) {
+                    Msg::addMessage("Create User Table failed: " . $query,MSG_ERROR);
+                }
                 self::loadInitialData($db);
             }
          }
@@ -258,11 +260,12 @@ class User {
      */
     protected static function loadInitialData($db) {
         $data = array(
-            array('pooch@dogs.ca', 'ruff', 'I\'m a dog!'),
-            array('fake@example.com', 'thisisfake', 'I\'m a fake!'),
+            array('admin@uhackit.ca', 'computer', "I am the system admin!"),
+            array('pooch@dogs.ca', 'ruff', "I'm a dog!"),
+            array('fake@example.com', 'thisisfake', "I'm a fake!"),
             array('kit@pouch.ca', 'woof', 'I am a dog too!'),
-            array('luke@cats.com', 'meow', 'I\'m a cat'),
-            array('bob@example.com', 'abc123', 'I am a Bob - oh, guess that\'s obvious'),
+            array('luke@cats.com', 'meow', "I'm a cat"),
+            array('bob@example.com', 'abc123', "I am a Bob - oh, guess that's obvious"),
             array('dumbbo@elephants.us', 'trunksrus', 'I am an elephant'),
             array('dumbass@example.com', 'password', 'I am so rich, I can affort to use an obvious password.')
         );

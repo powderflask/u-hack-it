@@ -10,15 +10,15 @@ An interactive tutorial on website security issues - a hackable website deployed
   
    Thus, this code should NOT, under any circumstance, be used on a real website.
    
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
 
 INSTALLATION:
 -------------
- 1) Create a MySQL DB  (other DBMS may work, but not tested)
-    - edit DB name, user, p/w into class-db.php
+ 1) Copy package to webserver docroot;
+    - webserver must have read/write access so SQLite DB can be created
     - all tables are created by app as required.
 
  2) If you are using .htaccess mod_rewrite, you can (optionally) use clean URL's setting in app-init.php

@@ -9,7 +9,7 @@
  *  - it exposes an SQL Injection vulnerability by not fitering user input before using it in a query.
  *  - it exposes a  XSS vulnerability storing and displaying unfiltered user input.
  * 
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
@@ -29,7 +29,13 @@ class Comment {
     var $username; // name of user posting comment
     var $comment;  // comment text
     var $timestamp; // datetime comment was made
-    
+
+    /*
+     * Constructor - required
+     */
+    public function __construct() {
+    }
+
     /**
      * Add a comment to the DB
      */
@@ -41,7 +47,7 @@ class Comment {
             $query="INSERT INTO comments (user, comment) VALUES ('$userid', '$comment');";
 
             $result = $db->query($query);
-            $result = !$result ? "DB Error adding new comment record." : TRUE;
+            $result = (bool) DB::fetch_rows($result) ? TRUE : "DB Error adding new comment record.";
             
             self::$last_query = $query;
         }  
@@ -60,8 +66,8 @@ class Comment {
             $query="SELECT * from comments where id = '$id';";
             // Run query
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
-                $comment = $result->fetch_object('Comment');
+            if ($result) {
+                $comment = $result->fetchObject('Comment');
                 return $comment;      
             }
         }
@@ -82,8 +88,8 @@ class Comment {
                              LIMIT 5;";            
             // Run query to look for a comment with that id name
             $result = $db->query($query);
-            if ($result && $result->num_rows > 0) {
-                while ($comment = $result->fetch_object('Comment')) {
+            if ($result) {
+                while ($comment = $result->fetchObject('Comment')) {
                    $comments[] = $comment;
                 }
             }
@@ -113,18 +119,19 @@ class Comment {
                 $db->query("DROP TABLE IF EXISTS comments");
             }
             // Only do the create if the table does not yet exist.
-            $table_exists = $db->query("DESCRIBE `comments`;", FALSE);
-            if (! $table_exists) {
-                $query = "CREATE TABLE `comments` (
-                              `id` int(10) unsigned NOT NULL auto_increment,
-                              `user` int(10) unsigned default NULL,
-                              `comment` text character set utf8 NOT NULL,
-                              `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-                              PRIMARY KEY  (`id`),
-                              FULLTEXT KEY `comment` (`comment`)
-                            ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+            if (! $db->tableExists('comments')) {
+                $query = "CREATE TABLE IF NOT EXISTS comments (
+                              id INTEGER PRIMARY KEY NOT NULL,
+                              user INTEGER default NULL,
+                              comment text NOT NULL,
+                              timestamp timestamp default CURRENT_TIMESTAMP NOT NULL,
+                              FOREIGN KEY (user)
+                                    REFERENCES members (id) 
+                            );
                          ";
-                $db->query($query);
+                if (! $db->query($query) ) {
+                    Msg::addMessage("Create Comment Table failed: " . $query,MSG_ERROR);
+                }
                 self::loadInitialData($db);
             }
          }
@@ -135,11 +142,11 @@ class Comment {
      */
     protected static function loadInitialData($db) {
         $data = array(
-            array('1', 'It\'s a dog\'s life - well, it would be if someome would give me dinner and a scratch behind the ear', '2014-02-19 11:12:13'),
+            array('2', "It's a dog\'s life - well, it would be if someome would give me dinner and a scratch behind the ear", '2014-02-19 11:12:13'),
             array('3', '42 - the answer to life, the universe, and everything.  Don\'t believe me?  Look it up. ', '2014-02-20 13:26:26'),
-            array('4', 'woof, woof, woof - don\'t you dogs know how to speak proper English?', '2014-02-21 16:46:42'),
-            array('6', 'The primary cause of problems is solutions.  Think about it.', '2014-02-22 14:57:03'),
-            array('3', 'Maybe dumbbo, but the primary cause of solutions is definately problems! Don\'t forget your towel! ', '2014-02-23 10:35:29'),
+            array('5', "woof, woof, woof - don't you dogs know how to speak proper English?", '2014-02-21 16:46:42'),
+            array('7', 'The primary cause of problems is solutions.  Think about it.', '2014-02-22 14:57:03'),
+            array('6', "Maybe dumbbo, but the primary cause of solutions is definately problems! Don't forget your towel! ", '2014-02-23 10:35:29'),
         );                
         foreach ($data as $item) {
             $item1 = $db->escape($item[1]);

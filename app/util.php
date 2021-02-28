@@ -5,7 +5,7 @@
  * 
  * Utilities
  *  
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
@@ -76,11 +76,9 @@ function Redirect($url = '/', $permanent = FALSE)
 function RedirectBack($default_url = '/')
 {
     $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    $current = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $server  = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '';
     // Only go back if that doesn't cause recursion and "back" is still on this site.
     if ( $referer &&
-         basename($referer) != basename($current) &&
          parse_url( $referer, PHP_URL_HOST ) == $server )
         $url = $referer;
     else

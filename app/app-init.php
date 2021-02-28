@@ -11,14 +11,13 @@
  *  
  *   App Init: Initialize the "application" - all the common logic needed to initialize the app. 
  *
- * Version: 0.1
+ * Version: 0.2
  * Author: Driftwood Cove Designs
  * Author URI: http://driftwoodcove.ca
  * License: GPL3 see license.txt
  */
-    require_once 'class-msg.php';
-    require_once 'util.php';
-    require_once 'class-user.php';
+    // Start the session  (something sensible :-P )
+    session_start();
 
     // Hack.me uses an IIS server with no URL rewrite capabilities - this flag causes URL paths to be sent as a ?q= paramter
     define ('CLEAN_URLS', FALSE);
@@ -51,10 +50,8 @@
         SQL_INJECTION  => array('path' => SQL_INJECTION,  'name' => 'SQL injection'),
         XSS_ATTACK     => array('path' => XSS_ATTACK,     'name' => 'XSS (JS injection)'),
         SESSION_HIJACK => array('path' => SESSION_HIJACK, 'name' => 'Session Hijacking'),
-        'unencrypted'  => array('path' => '#', 'name' => 'Unencrypted Credential'),
-        'csrf'         => array('path' => '#', 'name' => 'Cross Site Request Forgery'),
     );
 
-    // Start the session  (something sensible :-P )
-    session_start();
-    
+    require_once 'class-msg.php';
+    require_once 'util.php';
+    require_once 'class-user.php';
