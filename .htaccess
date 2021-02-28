@@ -6,11 +6,6 @@
 # this logic there: http://httpd.apache.org/docs/current/howto/htaccess.html.
 
 # ########################################
-# PHP - turn off magic_quotes
-# #########################################
-php_flag magic_quotes_gpc Off
-
-# ########################################
 # Parse HTML for PHP snippets
 # ########################################
 AddType application/x-httpd-php .html

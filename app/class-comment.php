@@ -47,7 +47,7 @@ class Comment {
             $query="INSERT INTO comments (user, comment) VALUES ('$userid', '$comment');";
 
             $result = $db->query($query);
-            $result = (bool) DB::fetch_rows($result) ? TRUE : "DB Error adding new comment record.";
+            $result = (bool) $result  ? TRUE : "DB Error adding new comment record.";
             
             self::$last_query = $query;
         }  
