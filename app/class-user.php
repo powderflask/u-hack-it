@@ -133,7 +133,7 @@ class User {
                 // ACK!  storing raw user input and unencrypted passwords in DB - yikes!
                 $query = "INSERT INTO members (username, password, personal) VALUES ('$login_name', '$login_pw', '$personal_info');";
                 $result = $db->query($query);
-                $result = !$result ? "DB Error adding new member record." : TRUE;
+                $result = (bool) $result  ? TRUE : "DB Error adding new member record.";
             }
             self::$last_query = $query;
          }  else {  

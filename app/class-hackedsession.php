@@ -32,10 +32,9 @@ class HackedSession {
         if ($db->isConnected()) {
             // Rely on MySQL to auto_increment id and use current_timestamp for datetime
             $query="INSERT INTO hackedsessions (sessionkey, referer) VALUES ('$sessionkey', '$referer');";
-
             $result = $db->query($query);
-            $result = (bool) DB::fetch_rows($result) ? TRUE : "DB Error adding new session record.";
-        }  
+            $result = (bool) $result  ? TRUE : "DB Error adding new session record.";
+        }
         else {  
            $result = "Unable to connect to DB - try later.";
         }
